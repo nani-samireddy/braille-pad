@@ -65,7 +65,9 @@ letters_braille_dict = {
     (False, True, False, True, True, True): Keycode.W,
     (True, False, True, True, False, True): Keycode.X,
     (True, False, True, True, True, True): Keycode.Y,
-    (True, False, True, False, True, True): Keycode.Z
+    (True, False, True, False, True, True): Keycode.Z,
+    (False,True,True,False,False,True): Keycode.COMMA,
+    (False,True,True,False,True,True): Keycode.PERIOD
 }
 
 def gpio_to_braille():
@@ -75,7 +77,6 @@ def gpio_to_braille():
         keyboard.press(numbers_braille_dict[braile_input])
         time.sleep(0.1)
         keyboard.release(numbers_braille_dict[braile_input])
-    
     
 
 # loop to check for button press
