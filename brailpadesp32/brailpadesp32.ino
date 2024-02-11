@@ -1,46 +1,78 @@
 /**
- * This example turns the ESP32 into a Bluetooth LE keyboard that writes the words, presses Enter, presses a media key and then Ctrl+Alt+Delete
+ * Include the libraries
  */
 #include <BleKeyboard.h>
 
+// Declared 
 BleKeyboard bleKeyboard;
+
+/*
+  Button PINS Constants
+*/
+#define BUTTON_1_PIN 15
+#define BUTTON_2_PIN 2
+#define BUTTON_3_PIN 0
+#define BUTTON_4_PIN 4
+#define BUTTON_5_PIN 16
+#define BUTTON_6_PIN 17
+#define BUTTON_7_PIN 5
+#define BUTTON_8_PIN 18
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Starting BLE work!");
+  pinMode(BUTTON_1_PIN, INPUT_PULLUP); 
+  pinMode(BUTTON_2_PIN, INPUT_PULLUP); 
+  pinMode(BUTTON_3_PIN, INPUT_PULLUP); 
+  pinMode(BUTTON_4_PIN, INPUT_PULLUP); 
+  pinMode(BUTTON_5_PIN, INPUT_PULLUP); 
+  pinMode(BUTTON_6_PIN, INPUT_PULLUP); 
+  pinMode(BUTTON_7_PIN, INPUT_PULLUP); 
+  pinMode(BUTTON_8_PIN, INPUT_PULLUP); 
   bleKeyboard.begin();
 }
 
 void loop() {
   if(bleKeyboard.isConnected()) {
-    Serial.println("Sending 'Hello world'...");
-    bleKeyboard.print("Hello world");
-
-    delay(1000);
-
-    Serial.println("Sending Enter key...");
-    bleKeyboard.write(KEY_RETURN);
-
-    delay(1000);
-
-    Serial.println("Sending Play/Pause media key...");
-    bleKeyboard.write(KEY_MEDIA_PLAY_PAUSE);
-
-    delay(1000);
-
-   //
-   // Below is an example of pressing multiple keyboard modifiers 
-   // which by default is commented out.
-    /*
-    Serial.println("Sending Ctrl+Alt+Delete...");
-    bleKeyboard.press(KEY_LEFT_CTRL);
-    bleKeyboard.press(KEY_LEFT_ALT);
-    bleKeyboard.press(KEY_DELETE);
-    delay(100);
-    bleKeyboard.releaseAll();
-    */
-  }
-
-  Serial.println("Waiting 5 seconds...");
-  delay(5000);
+      Serial.println("Bluetooth connected");
+    if(digitalRead(BUTTON_1_PIN) == LOW){
+      Serial.println("BUTTON 1 PRESSED");
+      bleKeyboard.write('a');
+    }
+    if(digitalRead(BUTTON_2_PIN) == LOW){
+      Serial.println("BUTTON 2 PRESSED");
+      bleKeyboard.write('b');
+    }
+    if(digitalRead(BUTTON_3_PIN) == LOW){
+      Serial.println("BUTTON 3 PRESSED");
+      bleKeyboard.write('c');
+    }
+    if(digitalRead(BUTTON_4_PIN) == LOW){
+      Serial.println("BUTTON 4 PRESSED");
+      bleKeyboard.write('d');
+    }
+    if(digitalRead(BUTTON_5_PIN) == LOW){
+      Serial.println("BUTTON 5 PRESSED");
+      bleKeyboard.write('e');
+    }
+    if(digitalRead(BUTTON_6_PIN) == LOW){
+      Serial.println("BUTTON 6 PRESSED");
+      bleKeyboard.write('f');
+    }
+    if(digitalRead(BUTTON_7_PIN) == LOW){
+      Serial.println("BUTTON 7 PRESSED");
+      bleKeyboard.write('g');
+    }
+    if(digitalRead(BUTTON_8_PIN) == LOW){
+      Serial.println("BUTTON 8 PRESSED");
+      bleKeyboard.write('h');
+    }
+    
+  }else{
+      Serial.println("Bluetooth Not connected");
+      Serial.println("Waiting 1 seconds...");
+    }
+  
+  delay(1000);
 }
+
