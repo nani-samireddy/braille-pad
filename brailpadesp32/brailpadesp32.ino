@@ -192,6 +192,9 @@ void send_braille_input()
   switch (current_mode)
   {
   case Mode::ToNumber:
+    /**
+     * @brief Send braille input as numbers.
+     */
     if (numbers_map.find(braille_input) != numbers_map.end())
     {
       const char *number_str = numbers_map[braille_input].c_str();
@@ -206,6 +209,9 @@ void send_braille_input()
     break;
 
   case Mode::ToCharacter:
+    /**
+     * @brief Send braille input as characters.
+     */
     if (alphabets_map.find(braille_input) != alphabets_map.end())
     {
       const char *char_str = alphabets_map[braille_input].c_str();
@@ -220,6 +226,9 @@ void send_braille_input()
     break;
 
   case Mode::ToCapital:
+    /**
+     * @brief Send braille input as capital characters.
+     */
     if (alphabets_map.find(braille_input) != alphabets_map.end())
     {
       const char *capital_str = alphabets_map[braille_input].c_str();
