@@ -347,7 +347,8 @@ void loop()
   if (bleKeyboard.isConnected())
   {
     Serial.println("Bluetooth connected");
-    process_braille_input(); // Process braille input if Bluetooth is connected
+    // Process braille input if Bluetooth is connected
+    process_braille_input();
   }
   else
   {
@@ -355,5 +356,6 @@ void loop()
     Serial.println("Waiting 600ms...");
   }
 
-  delay(600); // Wait for 600 milliseconds before checking again
+  // Wait for 600 milliseconds before checking again
+  delay(600);
 }
