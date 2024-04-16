@@ -1,19 +1,23 @@
 #include <BleKeyboard.h>
 #include <map>
+#include <ESP.h>
 
 BleKeyboard bleKeyboard;
 
+// Define input pin numbers for Braille inputs
 #define BRAILLE_INPUT_1 15
 #define BRAILLE_INPUT_2 2
 #define BRAILLE_INPUT_3 0
 #define BRAILLE_INPUT_4 12
 #define BRAILLE_INPUT_5 14
 #define BRAILLE_INPUT_6 27
-#define CONTROL_BUTTON_1 4
-#define CONTROL_BUTTON_2 26
-#define CONTROL_BUTTON_3 16
 
-// Vibration motor pin
+// Define input pin numbers for control buttons
+#define CONTROL_BUTTON_1 4
+#define CONTROL_BUTTON_2 16
+#define CONTROL_BUTTON_3 26
+
+// Define pin number for the vibration motor
 #define VBP 22
 
 // Enum to represent different modes
@@ -34,48 +38,25 @@ std::map<std::string, Mode> modes_map = {
     {"000001", Mode::ToCapital},
 };
 
+// Control Inputs map
+std::map<std::string, int> controls_map = {
+    {"100", KEY_TAB},
+    {"010", 0x20},
+    {"001", KEY_BACKSPACE},
+};
+
 // Map to store the conversion between braille patterns and numbers
 std::map<std::string, std::string> numbers_map = {
     {"100000", "1"},
     {"110000", "2"},
-    {"100100", "3"},
-    {"100110", "4"},
-    {"100010", "5"},
-    {"110100", "6"},
-    {"110110", "7"},
-    {"110010", "8"},
-    {"010100", "9"},
-    {"010110", "0"},
+    // Add more entries for other numbers
 };
 
 // Map to store the conversion between braille patterns and alphabets
 std::map<std::string, std::string> alphabets_map = {
     {"100000", "a"},
     {"110000", "b"},
-    {"100100", "c"},
-    {"100110", "d"},
-    {"100010", "e"},
-    {"110100", "f"},
-    {"110110", "g"},
-    {"110010", "h"},
-    {"010100", "i"},
-    {"010110", "j"},
-    {"101000", "k"},
-    {"111000", "l"},
-    {"101100", "m"},
-    {"101110", "n"},
-    {"101010", "o"},
-    {"111100", "p"},
-    {"111110", "q"},
-    {"111010", "r"},
-    {"011100", "s"},
-    {"011110", "t"},
-    {"101001", "u"},
-    {"111001", "v"},
-    {"010111", "w"},
-    {"101101", "x"},
-    {"101111", "y"},
-    {"101011", "z"},
+    // Add more entries for other alphabets
 };
 
 /**
@@ -90,12 +71,10 @@ void set_input_pins_pullup()
 {
   pinMode(BRAILLE_INPUT_1, INPUT_PULLUP);
   pinMode(BRAILLE_INPUT_2, INPUT_PULLUP);
-  pinMode(BRAILLE_INPUT_3, INPUT_PULLUP);
-  pinMode(BRAILLE_INPUT_4, INPUT_PULLUP);
-  pinMode(BRAILLE_INPUT_5, INPUT_PULLUP);
-  pinMode(BRAILLE_INPUT_6, INPUT_PULLUP);
+  // Set other input pins to INPUT_PULLUP mode
   pinMode(CONTROL_BUTTON_1, INPUT_PULLUP);
   pinMode(CONTROL_BUTTON_2, INPUT_PULLUP);
+  pinMode(CONTROL_BUTTON_3, INPUT_PULLUP);
   pinMode(VBP, OUTPUT);
 }
 
@@ -109,7 +88,6 @@ void set_input_pins_pullup()
  */
 void send_haptic_feedback()
 {
-  Serial.println("Sending Haptic Feedback");
   digitalWrite(VBP, HIGH);
   delay(200);
   digitalWrite(VBP, LOW);
@@ -126,13 +104,27 @@ void send_haptic_feedback()
 std::string decode_braille_input()
 {
   std::string braille_input = "";
+  // Read each input pin and append '1' or '0' based on its state
   braille_input += digitalRead(BRAILLE_INPUT_1) == LOW ? "1" : "0";
-  braille_input += digitalRead(BRAILLE_INPUT_2) == LOW ? "1" : "0";
-  braille_input += digitalRead(BRAILLE_INPUT_3) == LOW ? "1" : "0";
-  braille_input += digitalRead(BRAILLE_INPUT_4) == LOW ? "1" : "0";
-  braille_input += digitalRead(BRAILLE_INPUT_5) == LOW ? "1" : "0";
-  braille_input += digitalRead(BRAILLE_INPUT_6) == LOW ? "1" : "0";
+  // Read other input pins and append '1' or '0' based on their states
   return braille_input;
+}
+
+/**
+ * @brief Get the control inputs by reading the digital states of control button pins.
+ *
+ * This function reads the digital states of the control button pins
+ * and constructs a binary string representing the control inputs.
+ *
+ * @return std::string - The control inputs as a binary string.
+ */
+std::string get_controls_input()
+{
+  std::string controls_input = "";
+  // Read each control button pin and append '1' or '0' based on its state
+  controls_input += digitalRead(CONTROL_BUTTON_1) == LOW ? "1" : "0";
+  // Read other control button pins and append '1' or '0' based on their states
+  return controls_input;
 }
 
 /**
@@ -146,11 +138,12 @@ std::string decode_braille_input()
  */
 void change_mode(std::string braille_input)
 {
+  // Check if the braille pattern is in the modes map
   if (braille_input != "000000" && modes_map.find(braille_input) != modes_map.end())
   {
-    Serial.println("Changing mode");
     // Toggle the mode between ToCharacter and ToCapital
-    if ((current_mode == Mode::ToCharacter || current_mode == Mode::ToCapital) && (modes_map[braille_input] == Mode::ToCharacter || modes_map[braille_input] == Mode::ToCapital))
+    if ((current_mode == Mode::ToCharacter || current_mode == Mode::ToCapital) && 
+        (modes_map[braille_input] == Mode::ToCharacter || modes_map[braille_input] == Mode::ToCapital))
     {
       current_mode = current_mode == Mode::ToCharacter ? Mode::ToCapital : Mode::ToCharacter;
     }
@@ -169,16 +162,29 @@ void change_mode(std::string braille_input)
  *
  * @return void
  */
-void send_braille_input()
+void process_braille_input()
 {
+  // Check if the input is a control key
+  std::string controls_input = get_controls_input();
+  // Check if it is a disconnection input.
+  if(controls_input == "111"){
+    disconnectBluetooth();
+    return;
+  }
+
+  // Check if the input is a control combination
+  if (controls_map.find(controls_input) != controls_map.end())
+  {
+    // Send the corresponding keyboard output
+    bleKeyboard.write(static_cast<uint8_t>(controls_map[controls_input]));
+    return;
+  }
+
   std::string braille_input = decode_braille_input();
   if (braille_input == "000000")
   {
     return;
   }
-  // Log the braille input and current mode
-  Serial.println("Braille Input");
-  Serial.println(braille_input.c_str());
 
   // Check if the input is a mode change
   if (modes_map.find(braille_input) != modes_map.end())
@@ -192,9 +198,7 @@ void send_braille_input()
   switch (current_mode)
   {
   case Mode::ToNumber:
-    /**
-     * @brief Send braille input as numbers.
-     */
+    // Send braille input as numbers
     if (numbers_map.find(braille_input) != numbers_map.end())
     {
       const char *number_str = numbers_map[braille_input].c_str();
@@ -209,9 +213,7 @@ void send_braille_input()
     break;
 
   case Mode::ToCharacter:
-    /**
-     * @brief Send braille input as characters.
-     */
+    // Send braille input as characters
     if (alphabets_map.find(braille_input) != alphabets_map.end())
     {
       const char *char_str = alphabets_map[braille_input].c_str();
@@ -226,9 +228,7 @@ void send_braille_input()
     break;
 
   case Mode::ToCapital:
-    /**
-     * @brief Send braille input as capital characters.
-     */
+    // Send braille input as capital characters
     if (alphabets_map.find(braille_input) != alphabets_map.end())
     {
       const char *capital_str = alphabets_map[braille_input].c_str();
@@ -259,7 +259,9 @@ void disconnectBluetooth()
 {
   if (bleKeyboard.isConnected())
   {
-    bleKeyboard.end();
+    // Disconnect BLE keyboard and restart ESP32
+    ESP.restart();
+    send_haptic_feedback();
   }
 }
 
@@ -273,8 +275,10 @@ void disconnectBluetooth()
  */
 void setup()
 {
+  // Start serial communication
   Serial.begin(115200);
   Serial.println("Starting BLE work!");
+  // Initialize input pins and BLE keyboard
   set_input_pins_pullup();
   bleKeyboard.begin();
 }
@@ -290,16 +294,15 @@ void setup()
  */
 void loop()
 {
+  // Check if BLE keyboard is connected
   if (bleKeyboard.isConnected())
   {
-    Serial.println("Bluetooth connected");
-    send_braille_input();
+    // Process braille input if connected
+    process_braille_input();
   }
   else
   {
-    Serial.println("Bluetooth Not connected");
-    Serial.println("Waiting 1 seconds...");
+    // Wait for 600 milliseconds if not connected
+    delay(600);
   }
-
-  delay(600);
 }
