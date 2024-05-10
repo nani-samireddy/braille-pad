@@ -87,6 +87,9 @@ std::map<std::string, std::string> alphabets_map = {
     {"101101", "x"},
     {"101111", "y"},
     {"101011", "z"},
+    {"100001", "ch"},
+    {"100101", "sh"},
+    {"100111", "th"},
 };
 
 /**
@@ -123,7 +126,7 @@ void send_haptic_feedback()
 {
   Serial.println("Sending Haptic Feedback");
   digitalWrite(VBP, HIGH);
-  delay(200);
+  delay(300);
   digitalWrite(VBP, LOW);
 }
 
@@ -206,7 +209,7 @@ void process_braille_input()
   // Check if it is a disconnection input.
   if (controls_input == "111")
   {
-    disconnectBluetooth();
+    disconnectBluetooth();  
     return;
   }
 
@@ -353,9 +356,9 @@ void loop()
   else
   {
     Serial.println("Bluetooth Not connected");
-    Serial.println("Waiting 600ms...");
+    Serial.println("Waiting 300ms...");
   }
 
   // Wait for 600 milliseconds before checking again
-  delay(600);
+  delay(300);
 }
