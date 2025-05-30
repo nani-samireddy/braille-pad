@@ -1,7 +1,3 @@
-Certainly! Here's the updated README file with tables for the braille to text mappings added:
-
----
-
 # Braille Pad for Visually Impaired
 
 ## Overview
